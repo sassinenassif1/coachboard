@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp /Users/sassine/Downloads/project-notes.md /Users/sassine/coachboard/project-notes.md)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/portal)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/login)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__switch_browser",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__form_input",
+      "mcp__Claude_in_Chrome__find",
+      "mcp__Claude_in_Chrome__tabs_create_mcp",
+      "Bash(npx supabase *)",
+      "Bash(mkdir -p /Users/sassine/coachboard/src/app/portal/coach/\\\\[clientId\\\\])",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/portal/coach)",
+      "Bash(npx next *)",
+      "Bash(ls -la /Users/sassine/.git 2>/dev/null && echo \"git at home dir\" || echo \"no git at home\")",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
