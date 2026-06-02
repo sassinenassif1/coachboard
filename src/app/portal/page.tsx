@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Zap, LogOut, ChevronRight, Moon, Heart, Activity, TrendingUp } from 'lucide-react'
-import { logout, addComment } from './actions'
+import { Zap, LogOut, ChevronRight, Moon, Activity, TrendingUp, RefreshCw, CheckCircle2 } from 'lucide-react'
+import { logout, addComment, syncProvider } from './actions'
 
 type SessionType = 'run' | 'strength' | 'rest' | 'mobility' | 'cross_training'
 type SessionStatus = 'planned' | 'done' | 'skipped' | 'modified'
@@ -17,12 +18,24 @@ interface TrainingSession {
   comments: { id: string; author_id: string; body: string; created_at: string }[]
 }
 
+interface ProviderConnection {
+  provider: 'strava' | 'whoop'
+  last_sync_at: string | null
+  expires_at: string | null
+  scope: string | null
+}
+
 const TYPE_STYLES: Record<SessionType, { label: string; color: string; bg: string }> = {
   run: { label: 'RUN', color: '#0F6E56', bg: '#E1F5EE' },
   strength: { label: 'STRENGTH', color: '#3C3489', bg: '#EEEDFE' },
   rest: { label: 'REST', color: '#5F5E5A', bg: '#F1EFE8' },
   mobility: { label: 'MOBILITY', color: '#5F5E5A', bg: '#F1EFE8' },
   cross_training: { label: 'CROSS', color: '#3C3489', bg: '#EEEDFE' },
+}
+
+const PROVIDER_LABELS: Record<ProviderConnection['provider'], string> = {
+  strava: 'Strava',
+  whoop: 'WHOOP',
 }
 
 function getGreeting() {
@@ -47,7 +60,12 @@ function isPast(dateStr: string) {
   return dateStr < today
 }
 
-export default async function PortalPage() {
+export default async function PortalPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ connected?: string; oauth_error?: string }>
+}) {
+  const query = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -117,6 +135,12 @@ export default async function PortalPage() {
     .order('date', { ascending: false })
     .limit(7)
 
+  const { data: providerConnections } = await supabase
+    .from('provider_connections')
+    .select('provider, last_sync_at, expires_at, scope')
+    .eq('user_id', user.id)
+    .in('provider', ['strava', 'whoop'])
+
   const latestSleep = sleepLogs?.[0]
   const avgSleep = sleepLogs?.length
     ? Math.round((sleepLogs.reduce((sum: number, s: { total_minutes: number | null }) => sum + (s.total_minutes || 0), 0)) / sleepLogs.length)
@@ -184,24 +208,28 @@ export default async function PortalPage() {
             label="WEEKLY DISTANCE"
             value={weeklyDistance > 0 ? weeklyDistance.toFixed(1) : '—'}
             unit={weeklyDistance > 0 ? 'km' : ''}
+            href="/portal/history/distance"
           />
           <MetricCard
             label="RECOVERY"
             value="—"
             unit=""
             border
+            href="/portal/history/recovery"
           />
           <MetricCard
             label="SLEEP AVG"
             value={avgSleep ? `${Math.floor(avgSleep / 60)}h ${avgSleep % 60}m` : '—'}
             unit=""
             border
+            href="/portal/history/sleep"
           />
           <MetricCard
             label="RESTING HR"
             value={latestSleep?.resting_hr || '—'}
             unit={latestSleep?.resting_hr ? 'bpm' : ''}
             border
+            href="/portal/history/resting-hr"
           />
         </div>
 
@@ -229,11 +257,22 @@ export default async function PortalPage() {
 
           {/* Sidebar (1/3) */}
           <div className="space-y-6">
+            <DataConnections
+              connections={(providerConnections || []) as ProviderConnection[]}
+              connected={query.connected}
+              oauthError={query.oauth_error}
+            />
+
             {/* Sleep card */}
             <div className="border border-gray-100 rounded p-5">
-              <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
-                <Moon className="w-3 h-3 inline mr-1" /> SLEEP
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
+                  <Moon className="w-3 h-3 inline mr-1" /> SLEEP
+                </h3>
+                <Link href="/portal/history/sleep" className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02]">
+                  History
+                </Link>
+              </div>
               {latestSleep ? (
                 <div>
                   <div className="text-3xl font-bold tracking-tight">
@@ -268,9 +307,14 @@ export default async function PortalPage() {
 
             {/* Weekly goals */}
             <div className="border border-gray-100 rounded p-5">
-              <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
-                <TrendingUp className="w-3 h-3 inline mr-1" /> WEEKLY GOALS
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
+                  <TrendingUp className="w-3 h-3 inline mr-1" /> WEEKLY GOALS
+                </h3>
+                <Link href="/portal/history/sessions" className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02]">
+                  History
+                </Link>
+              </div>
               <GoalBar label="Sessions" current={doneCount} target={totalCount || 1} />
               <GoalBar label="Distance" current={weeklyDistance} target={30} unit="km" />
             </div>
@@ -280,9 +324,12 @@ export default async function PortalPage() {
         {/* Recent activities */}
         {(activities?.length ?? 0) > 0 && (
           <div className="mt-10">
-            <h2 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
-              RECENT ACTIVITIES
-            </h2>
+            <Link
+              href="/portal/history/activities"
+              className="inline-flex items-center gap-1 text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-[#FC4C02] mb-4 transition-colors"
+            >
+              RECENT ACTIVITIES <ChevronRight className="w-3 h-3" />
+            </Link>
             <div className="grid grid-cols-3 gap-4">
               {activities!.map((a: Record<string, unknown>) => (
                 <ActivityCard key={a.id as string} activity={a} />
@@ -295,13 +342,119 @@ export default async function PortalPage() {
   )
 }
 
-function MetricCard({ label, value, unit, border }: { label: string; value: string | number; unit: string; border?: boolean }) {
-  return (
-    <div className={`p-5 ${border ? 'border-l border-gray-100' : ''}`}>
+function MetricCard({
+  label,
+  value,
+  unit,
+  border,
+  href,
+}: {
+  label: string
+  value: string | number
+  unit: string
+  border?: boolean
+  href?: string
+}) {
+  const content = (
+    <>
       <div className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-2">{label}</div>
       <div className="text-2xl font-bold tracking-tight">
         {value}
         {unit && <span className="text-sm font-normal text-gray-400 ml-1">{unit}</span>}
+      </div>
+    </>
+  )
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={`p-5 block hover:bg-orange-50/30 transition-colors ${border ? 'border-l border-gray-100' : ''}`}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div className={`p-5 ${border ? 'border-l border-gray-100' : ''}`}>
+      {content}
+    </div>
+  )
+}
+
+function DataConnections({
+  connections,
+  connected,
+  oauthError,
+}: {
+  connections: ProviderConnection[]
+  connected?: string
+  oauthError?: string
+}) {
+  const byProvider = new Map(connections.map((connection) => [connection.provider, connection]))
+  const providers: ProviderConnection['provider'][] = ['strava', 'whoop']
+
+  return (
+    <div className="border border-gray-100 rounded p-5">
+      <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
+        <Activity className="w-3 h-3 inline mr-1" /> DATA CONNECTIONS
+      </h3>
+
+      {connected && PROVIDER_LABELS[connected as ProviderConnection['provider']] && (
+        <div className="mb-3 text-xs font-medium text-[#0F6E56]">
+          {PROVIDER_LABELS[connected as ProviderConnection['provider']]} connected.
+        </div>
+      )}
+      {oauthError && (
+        <div className="mb-3 text-xs font-medium text-[#FC4C02]">
+          Could not connect provider. Check credentials and callback URLs.
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {providers.map((provider) => {
+          const connection = byProvider.get(provider)
+
+          return (
+            <div key={provider} className="flex items-center justify-between gap-3 border-b border-gray-50 last:border-0 pb-3 last:pb-0">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold">{PROVIDER_LABELS[provider]}</span>
+                  {connection && <CheckCircle2 className="w-3.5 h-3.5 text-[#0F6E56]" />}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {connection?.last_sync_at
+                    ? `Synced ${new Date(connection.last_sync_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                    : provider === 'strava'
+                      ? 'Runs and workout activities'
+                      : 'Sleep, recovery, and workouts'}
+                </p>
+              </div>
+
+              {connection ? (
+                <form action={syncProvider}>
+                  <input type="hidden" name="provider" value={provider} />
+                  <button
+                    type="submit"
+                    className="w-8 h-8 rounded border border-gray-100 text-gray-500 hover:text-[#FC4C02] hover:border-[#FC4C02] flex items-center justify-center transition-colors"
+                    title={`Sync ${PROVIDER_LABELS[provider]}`}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+              ) : (
+                <a
+                  href={`/api/oauth/${provider}/start`}
+                  className="text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded text-white"
+                  style={{ background: '#FC4C02' }}
+                >
+                  Connect
+                </a>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -446,7 +599,7 @@ function ActivityCard({ activity }: { activity: Record<string, unknown> }) {
   const provider = activity.provider as string
 
   return (
-    <div className="border border-gray-100 rounded p-4">
+    <Link href="/portal/history/activities" className="block border border-gray-100 rounded p-4 hover:border-[#FC4C02] transition-colors">
       <div className="flex items-center justify-between mb-3">
         <span className="font-semibold text-sm truncate">{name}</span>
         <ChevronRight className="w-3 h-3 text-gray-300" />
@@ -481,6 +634,6 @@ function ActivityCard({ activity }: { activity: Record<string, unknown> }) {
         <Activity className="w-3 h-3 text-gray-300" />
         <span className="text-[10px] text-gray-400 capitalize">{provider}</span>
       </div>
-    </div>
+    </Link>
   )
 }
