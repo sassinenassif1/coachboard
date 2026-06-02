@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Zap, LogOut, ArrowLeft, Moon, Activity, ChevronRight } from 'lucide-react'
+import { Zap, LogOut, ArrowLeft, Moon, Activity, ChevronRight, Calendar } from 'lucide-react'
 import { logout, addComment } from '../../actions'
 import Link from 'next/link'
 
@@ -181,11 +181,20 @@ export default async function ClientDetailPage({
           <span className="text-xs text-gray-400 font-medium">{client?.email as string}</span>
         </div>
 
-        {plan && (
-          <p className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-2">
-            {plan.name as string}
-          </p>
-        )}
+        <div className="flex items-center gap-4 mb-2">
+          {plan && (
+            <p className="text-xs font-bold tracking-wider uppercase text-gray-400">
+              {plan.name as string}
+            </p>
+          )}
+          <Link
+            href={`/portal/coach/${clientId}/plan${plan ? `?planId=${(plan as { id: string }).id}` : ''}`}
+            className="text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded border border-[#FC4C02] text-[#FC4C02] hover:bg-[#FC4C02] hover:text-white transition-colors flex items-center gap-1"
+          >
+            <Calendar className="w-3 h-3" />
+            {plan ? 'Edit Plan' : 'Create Plan'}
+          </Link>
+        </div>
         {plan?.goal && (
           <p className="text-sm text-gray-500 mb-8">{plan.goal as string}</p>
         )}
