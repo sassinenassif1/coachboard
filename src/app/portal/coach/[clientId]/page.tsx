@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Zap, LogOut, ArrowLeft, Moon, Activity, Calendar } from 'lucide-react'
+import { Zap, LogOut, ArrowLeft, HeartPulse, Activity, Calendar } from 'lucide-react'
 import { logout, addComment } from '../../actions'
 import Link from 'next/link'
 
@@ -209,8 +209,13 @@ export default async function ClientDetailPage({
           <div className="lg:col-span-2">
             <h2 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">THIS WEEK</h2>
             {sessionsWithComments.length === 0 ? (
-              <div className="py-16 text-center text-gray-400 text-sm border border-gray-100 rounded">
-                No sessions this week.
+              <div className="py-16 text-center border border-dashed border-gray-200 rounded-lg">
+                <Calendar className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                <p className="text-sm text-gray-400 mb-1">No sessions this week</p>
+                <Link href={`/portal/coach/${clientId}/plan${plan ? `?planId=${(plan as { id: string }).id}` : ''}`}
+                  className="text-xs font-bold text-[#FC4C02] hover:underline">
+                  Add sessions in Plan Builder
+                </Link>
               </div>
             ) : (
               <div>
@@ -221,16 +226,18 @@ export default async function ClientDetailPage({
                   const past = isPast(session.scheduled_date)
 
                   return (
-                    <div key={session.id} className={`border-b border-gray-100 py-4 ${today ? 'bg-orange-50/30' : ''}`}>
-                      <div className="flex items-start gap-4">
-                        <div className="flex flex-col items-center w-16 shrink-0 pt-0.5">
+                    <div key={session.id} className={`flex rounded-lg mb-2 border transition-colors ${today ? 'border-[#FC4C02]/20 bg-orange-50/20' : 'border-gray-100 hover:border-gray-200'} ${done ? 'opacity-80' : ''}`}>
+                      {/* Color bar */}
+                      <div className="w-1 shrink-0 rounded-l-lg" style={{ background: style.color }} />
+                      <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 flex-1 min-w-0">
+                        <div className="flex flex-col items-center w-14 sm:w-16 shrink-0 pt-0.5">
                           <div className={`w-2.5 h-2.5 rounded-full mb-1 ${
                             done ? 'bg-[#FC4C02]'
                               : today ? 'ring-2 ring-[#FC4C02] ring-offset-1'
                               : past ? 'bg-gray-300'
                               : 'ring-2 ring-gray-200 ring-offset-1'
                           }`} />
-                          <span className="text-[10px] font-medium text-gray-400">
+                          <span className="text-[10px] font-medium text-gray-400 text-center">
                             {formatDate(session.scheduled_date)}
                           </span>
                         </div>
@@ -239,8 +246,12 @@ export default async function ClientDetailPage({
                             <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded" style={{ color: style.color, background: style.bg }}>
                               {style.label}
                             </span>
-                            <span className="font-semibold text-sm">{session.title}</span>
-                            {done && <span className="text-[10px] font-bold tracking-wider text-[#FC4C02]">DONE</span>}
+                            <span className="font-semibold text-sm truncate">{session.title}</span>
+                            {done && (
+                              <span className="text-[10px] font-bold tracking-wider text-white px-1.5 py-0.5 rounded" style={{ background: '#FC4C02' }}>
+                                DONE
+                              </span>
+                            )}
                           </div>
                           {session.description && <p className="text-sm text-gray-500 mb-2">{session.description}</p>}
 
@@ -269,8 +280,8 @@ export default async function ClientDetailPage({
                           <form action={addComment} className="mt-2 flex gap-2">
                             <input type="hidden" name="session_id" value={session.id} />
                             <input name="body" type="text" placeholder="Add coaching note..."
-                              className="flex-1 text-sm px-3 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
-                            <button type="submit" className="text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded text-white"
+                              className="flex-1 text-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:border-[#FC4C02] focus:ring-1 focus:ring-[#FC4C02]/20" />
+                            <button type="submit" className="text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-md text-white hover:opacity-90 transition-opacity"
                               style={{ background: '#FC4C02' }}>
                               Send
                             </button>
@@ -286,46 +297,60 @@ export default async function ClientDetailPage({
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Sleep */}
+            {/* Recovery */}
             <div className="border border-gray-100 rounded p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
-                  <Moon className="w-3 h-3 inline mr-1" /> SLEEP
+                  <HeartPulse className="w-3 h-3 inline mr-1" /> RECOVERY
                 </h3>
-                <Link href={`/portal/coach/${clientId}/history?tab=sleep`} className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02] hover:underline">
+                <Link href={`/portal/coach/${clientId}/history?tab=recovery`} className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02] hover:underline">
                   View All
                 </Link>
               </div>
               {latestSleep ? (
                 <div>
-                  <div className="text-3xl font-bold tracking-tight">
-                    {Math.floor(((latestSleep.total_minutes as number) || 0) / 60)}h {((latestSleep.total_minutes as number) || 0) % 60}m
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">Last night &middot; Score {latestSleep.sleep_score as number}/100</p>
-                  <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100">
-                    {latestSleep.hrv_ms && (
-                      <div>
-                        <span className="text-lg font-bold">{latestSleep.hrv_ms as number}</span>
-                        <span className="text-xs text-gray-400 ml-1">ms HRV</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">Sleep</div>
+                      <div className="text-3xl font-bold tracking-tight">
+                        {Math.floor(((latestSleep.total_minutes as number) || 0) / 60)}h {((latestSleep.total_minutes as number) || 0) % 60}m
                       </div>
-                    )}
-                    {latestSleep.resting_hr && (
-                      <div>
-                        <span className="text-lg font-bold">{latestSleep.resting_hr as number}</span>
-                        <span className="text-xs text-gray-400 ml-1">bpm</span>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">Score</div>
+                      <div className="text-3xl font-bold tracking-tight">
+                        {(latestSleep.sleep_score as number) || '—'}
+                        {latestSleep.sleep_score && <span className="text-sm font-normal text-gray-400 ml-1">/100</span>}
                       </div>
-                    )}
+                    </div>
                   </div>
-                  {/* Sleep trend */}
+                  <p className="text-xs text-gray-400 mt-1">Last night</p>
+                  <div className="grid grid-cols-3 gap-4 mt-4 pt-3 border-t border-gray-100">
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">HRV</div>
+                      <span className="text-lg font-bold">{(latestSleep.hrv_ms as number) || '—'}</span>
+                      {latestSleep.hrv_ms && <span className="text-xs text-gray-400 ml-1">ms</span>}
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">Resting HR</div>
+                      <span className="text-lg font-bold">{(latestSleep.resting_hr as number) || '—'}</span>
+                      {latestSleep.resting_hr && <span className="text-xs text-gray-400 ml-1">bpm</span>}
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">Provider</div>
+                      <span className="text-lg font-bold uppercase">{(latestSleep.provider as string) || '—'}</span>
+                    </div>
+                  </div>
+                  {/* Recovery trend */}
                   {(sleepLogs?.length ?? 0) > 1 && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
-                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-2">7-DAY TREND</div>
+                      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-2">RECENT RECOVERY</div>
                       <div className="flex gap-1 items-end h-8">
-                        {(sleepLogs || []).slice(0, 7).reverse().map((s: { total_minutes?: number | null }, i: number) => {
-                          const mins = (s.total_minutes as number) || 0
-                          const pct = Math.round((mins / 540) * 100) // 9h = 100%
+                        {(sleepLogs || []).slice(0, 7).reverse().map((s: { sleep_score?: number | null; hrv_ms?: number | null; total_minutes?: number | null }, i: number) => {
+                          const score = (s.sleep_score as number) || 0
+                          const pct = score || Math.round((((s.total_minutes as number) || 0) / 540) * 100)
                           return (
-                            <div key={i} className="flex-1 rounded-sm" style={{ height: `${pct}%`, background: '#FC4C02', opacity: 0.3 + (i * 0.1) }} />
+                            <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(pct, 8)}%`, background: '#FC4C02', opacity: 0.25 + (i * 0.1) }} />
                           )
                         })}
                       </div>
@@ -333,7 +358,7 @@ export default async function ClientDetailPage({
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400">No sleep data</p>
+                <p className="text-sm text-gray-400">No recovery data</p>
               )}
             </div>
 

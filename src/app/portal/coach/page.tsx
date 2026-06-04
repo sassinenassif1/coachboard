@@ -197,88 +197,113 @@ function ClientCard({ client }: { client: ClientSummary; weekStart: string; week
     ? Math.round((client.sessionsDone / client.sessionsTotal) * 100)
     : 0
 
+  // Compliance color
+  const complianceColor = pct >= 80 ? '#0F6E56' : pct >= 50 ? '#FC4C02' : pct > 0 ? '#E54304' : '#D1D5DB'
+  const initials = client.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?'
+
+  // SVG compliance ring
+  const ringSize = 44
+  const ringStroke = 3
+  const ringRadius = (ringSize - ringStroke) / 2
+  const ringCircumference = 2 * Math.PI * ringRadius
+  const ringOffset = ringCircumference - (pct / 100) * ringCircumference
+
   return (
-    <div className="border border-gray-100 rounded p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <Link
-            href={`/portal/coach/${client.id}`}
-            className="font-bold text-lg tracking-tight hover:text-[#FC4C02] transition-colors"
-          >
-            {client.name}
-            <ChevronRight className="w-4 h-4 inline ml-1 text-gray-300" />
-          </Link>
-          <p className="text-xs text-gray-400 mt-0.5">{client.email}</p>
-        </div>
-        <div className="text-right">
-          <div className="text-xs font-bold tracking-wider uppercase text-gray-400">WEEK</div>
-          <div className="text-sm font-semibold">
-            {client.sessionsDone}/{client.sessionsTotal} sessions
+    <Link
+      href={`/portal/coach/${client.id}`}
+      className="block border border-gray-100 rounded-lg hover:border-gray-200 hover:shadow-sm transition-all group"
+    >
+      <div className="p-5 sm:p-6">
+        {/* Header: avatar + name + compliance ring */}
+        <div className="flex items-center gap-4 mb-5">
+          {/* Avatar with initials */}
+          <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold tracking-tight shrink-0"
+            style={{ background: '#FC4C02', color: 'white' }}>
+            {initials}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-base tracking-tight group-hover:text-[#FC4C02] transition-colors truncate">
+                {client.name}
+              </span>
+              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#FC4C02] transition-colors shrink-0" />
+            </div>
+            <p className="text-xs text-gray-400 truncate">{client.email}</p>
+          </div>
+
+          {/* Compliance ring */}
+          <div className="relative shrink-0">
+            <svg width={ringSize} height={ringSize} className="-rotate-90">
+              <circle cx={ringSize/2} cy={ringSize/2} r={ringRadius}
+                fill="none" stroke="#F3F4F6" strokeWidth={ringStroke} />
+              {client.sessionsTotal > 0 && (
+                <circle cx={ringSize/2} cy={ringSize/2} r={ringRadius}
+                  fill="none" stroke={complianceColor} strokeWidth={ringStroke}
+                  strokeDasharray={ringCircumference} strokeDashoffset={ringOffset}
+                  strokeLinecap="round" className="transition-all" />
+              )}
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[10px] font-bold" style={{ color: complianceColor }}>
+                {client.sessionsTotal > 0 ? `${pct}%` : '—'}
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Metrics row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
+          <MetricPill label="Distance" value={client.weekDistance > 0 ? client.weekDistance.toFixed(1) : '—'} unit={client.weekDistance > 0 ? 'km' : ''} />
+          <MetricPill label="Resting HR" value={client.restingHr || '—'} unit={client.restingHr ? 'bpm' : ''} />
+          <MetricPill label="HRV" value={client.hrv || '—'} unit={client.hrv ? 'ms' : ''} />
+          <MetricPill label="Sleep" value={client.sleepScore || '—'} unit={client.sleepScore ? '/100' : ''} />
+        </div>
+
+        {/* Progress bar */}
+        {client.sessionsTotal > 0 && (
+          <div className="mt-4">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-gray-400">
+                WEEK PROGRESS
+              </span>
+              <span className="text-[10px] font-medium text-gray-500">
+                {client.sessionsDone} of {client.sessionsTotal} sessions
+              </span>
+            </div>
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${pct}%`, background: complianceColor }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Metrics row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">DISTANCE</div>
-          <div className="text-lg font-bold">
-            {client.weekDistance > 0 ? client.weekDistance.toFixed(1) : '—'}
-            {client.weekDistance > 0 && <span className="text-xs font-normal text-gray-400 ml-0.5">km</span>}
-          </div>
-        </div>
-        <div>
-          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">COMPLIANCE</div>
-          <div className="text-lg font-bold">
-            {client.sessionsTotal > 0 ? `${pct}%` : '—'}
-          </div>
-        </div>
-        <div>
-          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">RESTING HR</div>
-          <div className="text-lg font-bold">
-            {client.restingHr || '—'}
-            {client.restingHr && <span className="text-xs font-normal text-gray-400 ml-0.5">bpm</span>}
-          </div>
-        </div>
-        <div>
-          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">HRV</div>
-          <div className="text-lg font-bold">
-            {client.hrv || '—'}
-            {client.hrv && <span className="text-xs font-normal text-gray-400 ml-0.5">ms</span>}
-          </div>
-        </div>
-        <div>
-          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">SLEEP</div>
-          <div className="text-lg font-bold">
-            {client.sleepScore || '—'}
-            {client.sleepScore && <span className="text-xs font-normal text-gray-400 ml-0.5">/100</span>}
-          </div>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      {client.sessionsTotal > 0 && (
-        <div className="mt-4">
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{ width: `${pct}%`, background: '#FC4C02' }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Latest activity */}
+      {/* Latest activity footer */}
       {client.latestActivity && (
-        <div className="mt-4 pt-3 border-t border-gray-50 flex items-center gap-3 text-xs text-gray-400">
-          <Activity className="w-3 h-3" />
+        <div className="px-5 sm:px-6 py-3 border-t border-gray-50 bg-gray-50/30 rounded-b-lg flex items-center gap-3 text-xs text-gray-400">
+          <Activity className="w-3.5 h-3.5 text-gray-300" />
           <span className="font-medium text-gray-600">{client.latestActivity.name as string}</span>
-          <span>&middot;</span>
+          <span className="text-gray-300">&middot;</span>
           <span>{(client.latestActivity.distance_km as number)?.toFixed(1)} km</span>
-          <span>&middot;</span>
+          <span className="text-gray-300">&middot;</span>
           <span>{new Date(client.latestActivity.start_time as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
         </div>
       )}
+    </Link>
+  )
+}
+
+function MetricPill({ label, value, unit }: { label: string; value: string | number; unit: string }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-0.5">{label}</div>
+      <div className="text-base font-bold tracking-tight">
+        {value}
+        {unit && <span className="text-[10px] font-normal text-gray-400 ml-0.5">{unit}</span>}
+      </div>
     </div>
   )
 }
