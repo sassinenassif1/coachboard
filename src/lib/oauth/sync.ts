@@ -4,6 +4,7 @@ import { type FitnessProvider, getProviderLabel } from './providers'
 interface SyncResult {
   activities: number
   sleepLogs: number
+  linked: number
 }
 
 interface StravaActivity {
@@ -108,11 +109,19 @@ export async function syncProviderData(
   userId: string,
   accessToken: string
 ): Promise<SyncResult> {
+  let result: SyncResult
+
   if (provider === 'strava') {
-    return syncStravaActivities(supabase, userId, accessToken)
+    result = await syncStravaActivities(supabase, userId, accessToken)
+  } else {
+    result = await syncWhoopData(supabase, userId, accessToken)
   }
 
-  return syncWhoopData(supabase, userId, accessToken)
+  // Auto-link activities to planned sessions
+  const linked = await linkActivitiesToSessions(supabase, userId)
+  result.linked = linked
+
+  return result
 }
 
 async function syncStravaActivities(
@@ -148,7 +157,7 @@ async function syncStravaActivities(
     if (error) throw new Error(`Could not save ${getProviderLabel('strava')} activities: ${error.message}`)
   }
 
-  return { activities: rows.length, sleepLogs: 0 }
+  return { activities: rows.length, sleepLogs: 0, linked: 0 }
 }
 
 async function syncWhoopData(
@@ -227,5 +236,107 @@ async function syncWhoopData(
     if (error) throw new Error(`Could not save ${getProviderLabel('whoop')} sleep: ${error.message}`)
   }
 
-  return { activities: activityRows.length, sleepLogs: sleepRows.length }
+  return { activities: activityRows.length, sleepLogs: sleepRows.length, linked: 0 }
+}
+
+// ── Activity↔Session Auto-Linking ──────────────────────────────
+//
+// Matches unlinked activities to planned sessions based on:
+// 1. Same date (activity start_time date == session scheduled_date)
+// 2. Compatible type (run activity → run session, etc.)
+// 3. Session not already linked
+// 4. Session status updated to 'done' on match
+
+const ACTIVITY_TYPE_MAP: Record<string, string[]> = {
+  // Strava sport_type/type → session types
+  Run: ['run'],
+  TrailRun: ['run'],
+  VirtualRun: ['run'],
+  Walk: ['run', 'mobility'],
+  Hike: ['run', 'cross_training'],
+  Ride: ['cross_training'],
+  VirtualRide: ['cross_training'],
+  Swim: ['cross_training'],
+  WeightTraining: ['strength'],
+  Crossfit: ['strength', 'cross_training'],
+  Yoga: ['mobility'],
+  Workout: ['strength', 'cross_training'],
+  // Whoop types
+  Running: ['run'],
+  Cycling: ['cross_training'],
+  'Functional Fitness': ['strength', 'cross_training'],
+  Stretching: ['mobility'],
+}
+
+function activityMatchesSession(activityType: string, sessionType: string): boolean {
+  const mappedTypes = ACTIVITY_TYPE_MAP[activityType]
+  if (mappedTypes) return mappedTypes.includes(sessionType)
+  // Fallback: fuzzy match on common keywords
+  const lower = activityType.toLowerCase()
+  if (sessionType === 'run' && (lower.includes('run') || lower.includes('jog'))) return true
+  if (sessionType === 'strength' && (lower.includes('weight') || lower.includes('strength') || lower.includes('lift'))) return true
+  if (sessionType === 'cross_training' && (lower.includes('ride') || lower.includes('swim') || lower.includes('cross'))) return true
+  if (sessionType === 'mobility' && (lower.includes('yoga') || lower.includes('stretch') || lower.includes('mobility'))) return true
+  return false
+}
+
+async function linkActivitiesToSessions(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  // Get unlinked activities from the last 30 days
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: unlinkedActivities } = await supabase
+    .from('activities')
+    .select('id, start_time, type')
+    .eq('client_id', userId)
+    .gte('start_time', since)
+    .order('start_time', { ascending: false })
+
+  if (!unlinkedActivities?.length) return 0
+
+  // Get planned (unlinkable) sessions for the same period
+  const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const { data: sessions } = await supabase
+    .from('sessions')
+    .select('id, scheduled_date, type, status, linked_activity_id')
+    .eq('client_id', userId)
+    .gte('scheduled_date', startDate)
+    .is('linked_activity_id', null)
+    .in('status', ['planned', 'modified'])
+
+  if (!sessions?.length) return 0
+
+  let linked = 0
+
+  for (const activity of unlinkedActivities) {
+    const activityDate = (activity.start_time as string)?.split('T')[0]
+    if (!activityDate) continue
+
+    // Find a matching session: same date, compatible type, not yet linked
+    const match = sessions.find(
+      (s) =>
+        (s.scheduled_date as string) === activityDate &&
+        activityMatchesSession(activity.type as string, s.type as string) &&
+        !s.linked_activity_id
+    )
+
+    if (match) {
+      const { error } = await supabase
+        .from('sessions')
+        .update({
+          linked_activity_id: activity.id,
+          status: 'done',
+        })
+        .eq('id', match.id)
+
+      if (!error) {
+        // Mark this session as linked so we don't match it again in this loop
+        match.linked_activity_id = activity.id
+        linked++
+      }
+    }
+  }
+
+  return linked
 }
