@@ -203,7 +203,7 @@ export default async function PortalPage({
         )}
 
         {/* Metric bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-100 rounded mb-8 sm:mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-100 rounded-lg mb-8 sm:mb-10">
           <MetricCard
             label="WEEKLY DISTANCE"
             value={weeklyDistance > 0 ? weeklyDistance.toFixed(1) : '—'}
@@ -242,12 +242,13 @@ export default async function PortalPage({
             </h2>
 
             {sessionsWithComments.length === 0 ? (
-              <div className="py-16 text-center text-gray-400 text-sm border border-gray-100 rounded">
-                No sessions scheduled this week.
-                {role === 'client' && ' Your coach will add your plan here.'}
+              <div className="py-16 text-center border border-dashed border-gray-200 rounded-lg">
+                <Activity className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                <p className="text-sm text-gray-400 mb-1">No sessions scheduled this week</p>
+                <p className="text-xs text-gray-300">Your coach will add your plan here</p>
               </div>
             ) : (
-              <div className="space-y-0">
+              <div className="space-y-2">
                 {sessionsWithComments.map((session) => (
                   <SessionRow key={session.id} session={session} userId={user.id} />
                 ))}
@@ -264,7 +265,7 @@ export default async function PortalPage({
             />
 
             {/* Sleep card */}
-            <div className="border border-gray-100 rounded p-5">
+            <div className="border border-gray-100 rounded-lg p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
                   <Moon className="w-3 h-3 inline mr-1" /> SLEEP
@@ -306,7 +307,7 @@ export default async function PortalPage({
             </div>
 
             {/* Weekly goals */}
-            <div className="border border-gray-100 rounded p-5">
+            <div className="border border-gray-100 rounded-lg p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
                   <TrendingUp className="w-3 h-3 inline mr-1" /> WEEKLY GOALS
@@ -396,7 +397,7 @@ function DataConnections({
   const providers: ProviderConnection['provider'][] = ['strava', 'whoop']
 
   return (
-    <div className="border border-gray-100 rounded p-5">
+    <div className="border border-gray-100 rounded-lg p-5">
       <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
         <Activity className="w-3 h-3 inline mr-1" /> DATA CONNECTIONS
       </h3>
@@ -467,10 +468,12 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
   const done = session.status === 'done'
 
   return (
-    <div className={`border-b border-gray-100 py-4 ${today ? 'bg-orange-50/30' : ''}`}>
-      <div className="flex items-start gap-4">
+    <div className={`flex rounded-lg border transition-colors ${today ? 'border-[#FC4C02]/20 bg-orange-50/20' : 'border-gray-100 hover:border-gray-200'} ${done ? 'opacity-80' : ''}`}>
+      {/* Color bar */}
+      <div className="w-1 shrink-0 rounded-l-lg" style={{ background: style.color }} />
+      <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 flex-1 min-w-0">
         {/* Status dot + date */}
-        <div className="flex flex-col items-center w-16 shrink-0 pt-0.5">
+        <div className="flex flex-col items-center w-14 sm:w-16 shrink-0 pt-0.5">
           <div
             className={`w-2.5 h-2.5 rounded-full mb-1 ${
               done
@@ -482,7 +485,7 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
                     : 'ring-2 ring-gray-200 ring-offset-1'
             }`}
           />
-          <span className="text-[10px] font-medium text-gray-400">
+          <span className="text-[10px] font-medium text-gray-400 text-center">
             {formatDate(session.scheduled_date)}
           </span>
         </div>
@@ -498,7 +501,9 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
             </span>
             <span className="font-semibold text-sm truncate">{session.title}</span>
             {done && (
-              <span className="text-[10px] font-bold tracking-wider text-[#FC4C02]">DONE</span>
+              <span className="text-[10px] font-bold tracking-wider text-white px-1.5 py-0.5 rounded" style={{ background: '#FC4C02' }}>
+                DONE
+              </span>
             )}
           </div>
           {session.description && (
@@ -507,9 +512,9 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
 
           {/* Target chips */}
           {session.targets && (
-            <div className="flex gap-2 flex-wrap mb-2">
+            <div className="flex gap-1.5 flex-wrap mb-2">
               {Object.entries(session.targets).map(([key, val]) => (
-                <span key={key} className="text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded">
+                <span key={key} className="text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
                   {key.replace(/_/g, ' ')}: {String(val)}
                 </span>
               ))}
@@ -518,11 +523,11 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
 
           {/* Comments */}
           {session.comments.length > 0 && (
-            <div className="mt-2 space-y-1">
+            <div className="mt-2 space-y-1.5">
               {session.comments.map((c) => (
                 <div
                   key={c.id}
-                  className="text-sm text-gray-600 pl-3 border-l-2"
+                  className="text-sm text-gray-600 pl-3 border-l-2 py-0.5"
                   style={{ borderColor: c.author_id === userId ? '#FC4C02' : '#E5E5E5' }}
                 >
                   {c.body}
@@ -533,17 +538,17 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
 
           {/* Comment input for done/today sessions */}
           {(done || today) && (
-            <form action={addComment} className="mt-2 flex gap-2">
+            <form action={addComment} className="mt-3 flex gap-2">
               <input type="hidden" name="session_id" value={session.id} />
               <input
                 name="body"
                 type="text"
                 placeholder="Add a note..."
-                className="flex-1 text-sm px-3 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]"
+                className="flex-1 text-sm px-3 py-1.5 border border-gray-200 rounded-md focus:outline-none focus:border-[#FC4C02] focus:ring-1 focus:ring-[#FC4C02]/20"
               />
               <button
                 type="submit"
-                className="text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded text-white"
+                className="text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-md text-white hover:opacity-90 transition-opacity"
                 style={{ background: '#FC4C02' }}
               >
                 Log
@@ -599,40 +604,40 @@ function ActivityCard({ activity }: { activity: Record<string, unknown> }) {
   const provider = activity.provider as string
 
   return (
-    <Link href="/portal/history/activities" className="block border border-gray-100 rounded p-4 hover:border-[#FC4C02] transition-colors">
+    <Link href="/portal/history/activities" className="block border border-gray-100 rounded-lg p-4 hover:border-gray-200 hover:shadow-sm transition-all group">
       <div className="flex items-center justify-between mb-3">
-        <span className="font-semibold text-sm truncate">{name}</span>
-        <ChevronRight className="w-3 h-3 text-gray-300" />
+        <span className="font-semibold text-sm truncate group-hover:text-[#FC4C02] transition-colors">{name}</span>
+        <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#FC4C02] transition-colors" />
       </div>
-      <div className="grid grid-cols-2 gap-y-2 text-sm">
+      <div className="grid grid-cols-2 gap-y-3 text-sm">
         {distance != null && (
           <div>
-            <div className="text-xs font-bold tracking-wider uppercase text-gray-400">Distance</div>
-            <div className="font-semibold">{distance.toFixed(1)} <span className="text-xs font-normal text-gray-400">km</span></div>
+            <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">Distance</div>
+            <div className="text-base font-bold tracking-tight">{distance.toFixed(1)} <span className="text-[10px] font-normal text-gray-400">km</span></div>
           </div>
         )}
         {pace != null && (
           <div>
-            <div className="text-xs font-bold tracking-wider uppercase text-gray-400">Pace</div>
-            <div className="font-semibold">{Math.floor(pace / 60)}:{String(Math.round(pace % 60)).padStart(2, '0')} <span className="text-xs font-normal text-gray-400">/km</span></div>
+            <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">Pace</div>
+            <div className="text-base font-bold tracking-tight">{Math.floor(pace / 60)}:{String(Math.round(pace % 60)).padStart(2, '0')} <span className="text-[10px] font-normal text-gray-400">/km</span></div>
           </div>
         )}
         {avgHr != null && (
           <div>
-            <div className="text-xs font-bold tracking-wider uppercase text-gray-400">Avg HR</div>
-            <div className="font-semibold">{avgHr} <span className="text-xs font-normal text-gray-400">bpm</span></div>
+            <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">Avg HR</div>
+            <div className="text-base font-bold tracking-tight">{avgHr} <span className="text-[10px] font-normal text-gray-400">bpm</span></div>
           </div>
         )}
         {duration != null && (
           <div>
-            <div className="text-xs font-bold tracking-wider uppercase text-gray-400">Duration</div>
-            <div className="font-semibold">{Math.floor(duration / 60)} <span className="text-xs font-normal text-gray-400">min</span></div>
+            <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">Duration</div>
+            <div className="text-base font-bold tracking-tight">{Math.floor(duration / 60)} <span className="text-[10px] font-normal text-gray-400">min</span></div>
           </div>
         )}
       </div>
-      <div className="mt-3 pt-2 border-t border-gray-100 flex items-center gap-1">
+      <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center gap-1.5">
         <Activity className="w-3 h-3 text-gray-300" />
-        <span className="text-[10px] text-gray-400 capitalize">{provider}</span>
+        <span className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{provider}</span>
       </div>
     </Link>
   )
