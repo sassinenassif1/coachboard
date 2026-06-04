@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Zap, LogOut, ArrowLeft, Activity, Moon, Heart, TrendingUp } from 'lucide-react'
 import { logout } from '../../../actions'
 
-type Tab = 'activities' | 'sleep' | 'recovery'
+type Tab = 'activities' | 'distance' | 'sleep' | 'recovery' | 'resting-hr' | 'sessions'
 
 interface ActivityRow {
   id: string
@@ -32,6 +32,16 @@ interface SleepRow {
   hrv_ms: number | null
   resting_hr: number | null
   sleep_score: number | null
+}
+
+interface SessionRow {
+  id: string
+  scheduled_date: string
+  type: string
+  title: string
+  description: string | null
+  status: string
+  targets: Record<string, unknown> | null
 }
 
 function formatDate(value: string) {
@@ -99,26 +109,36 @@ export default async function CoachClientHistoryPage({
     .single()
 
   const clientName = (client?.full_name as string) || 'Athlete'
-  const activeTab: Tab = (query.tab === 'sleep' || query.tab === 'recovery') ? query.tab : 'activities'
+  const activeTab: Tab = (
+    query.tab === 'distance' ||
+    query.tab === 'sleep' ||
+    query.tab === 'recovery' ||
+    query.tab === 'resting-hr' ||
+    query.tab === 'sessions'
+  ) ? query.tab : 'activities'
 
   // Fetch data
-  const [{ data: activities }, { data: sleepLogs }] = await Promise.all([
+  const [{ data: activities }, { data: sleepLogs }, { data: sessions }] = await Promise.all([
     supabase
       .from('activities')
       .select('id, provider, start_time, type, name, distance_km, duration_sec, avg_hr, max_hr, avg_pace_sec_per_km, elevation_gain_m')
       .eq('client_id', clientId)
-      .order('start_time', { ascending: false })
-      .limit(100),
+      .order('start_time', { ascending: false }),
     supabase
       .from('sleep_logs')
       .select('id, date, provider, total_minutes, deep_minutes, rem_minutes, light_minutes, awake_minutes, hrv_ms, resting_hr, sleep_score')
       .eq('client_id', clientId)
-      .order('date', { ascending: false })
-      .limit(100),
+      .order('date', { ascending: false }),
+    supabase
+      .from('sessions')
+      .select('id, scheduled_date, type, title, description, status, targets')
+      .eq('client_id', clientId)
+      .order('scheduled_date', { ascending: false }),
   ])
 
   const activityRows = (activities || []) as ActivityRow[]
   const sleepRows = (sleepLogs || []) as SleepRow[]
+  const sessionRows = (sessions || []) as SessionRow[]
 
   // Aggregate stats
   const totalDistance = activityRows.reduce((sum, a) => sum + (a.distance_km || 0), 0)
@@ -128,10 +148,6 @@ export default async function CoachClientHistoryPage({
   const avgRestingHr = sleepRows.filter(s => s.resting_hr).length > 0
     ? Math.round(sleepRows.filter(s => s.resting_hr).reduce((sum, s) => sum + (s.resting_hr || 0), 0) / sleepRows.filter(s => s.resting_hr).length)
     : null
-  const avgSleepScore = sleepRows.filter(s => s.sleep_score).length > 0
-    ? Math.round(sleepRows.filter(s => s.sleep_score).reduce((sum, s) => sum + (s.sleep_score || 0), 0) / sleepRows.filter(s => s.sleep_score).length)
-    : null
-
   return (
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-100">
@@ -191,8 +207,11 @@ export default async function CoachClientHistoryPage({
         <div className="flex gap-2 mb-6">
           {([
             { key: 'activities', label: 'Activities', icon: Activity },
+            { key: 'distance', label: 'Distance', icon: TrendingUp },
             { key: 'sleep', label: 'Sleep', icon: Moon },
             { key: 'recovery', label: 'Recovery', icon: Heart },
+            { key: 'resting-hr', label: 'Resting HR', icon: Heart },
+            { key: 'sessions', label: 'Sessions', icon: TrendingUp },
           ] as const).map(({ key, label, icon: Icon }) => (
             <Link
               key={key}
@@ -234,6 +253,10 @@ export default async function CoachClientHistoryPage({
               ))}
             </div>
           )
+        )}
+
+        {activeTab === 'distance' && (
+          <DistanceHistory activities={activityRows} />
         )}
 
         {activeTab === 'sleep' && (
@@ -280,6 +303,14 @@ export default async function CoachClientHistoryPage({
             </div>
           )
         })()}
+
+        {activeTab === 'resting-hr' && (
+          <RestingHrTable sleepRows={sleepRows} />
+        )}
+
+        {activeTab === 'sessions' && (
+          <SessionsTable sessions={sessionRows} />
+        )}
       </main>
     </div>
   )
@@ -289,6 +320,105 @@ function EmptyState({ label }: { label: string }) {
   return (
     <div className="py-16 text-center text-gray-400 text-sm border border-gray-100 rounded">
       No {label} yet.
+    </div>
+  )
+}
+
+function DistanceHistory({ activities }: { activities: ActivityRow[] }) {
+  const distanceRows = activities.filter((activity) => activity.distance_km != null)
+  if (distanceRows.length === 0) return <EmptyState label="distance data" />
+
+  const total = distanceRows.reduce((sum, activity) => sum + (activity.distance_km || 0), 0)
+  const longest = Math.max(...distanceRows.map((activity) => activity.distance_km || 0))
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 border border-gray-100 rounded">
+        <MiniMetric label="Total logged" value={total.toFixed(1)} unit="km" />
+        <MiniMetric label="Longest workout" value={longest.toFixed(1)} unit="km" border />
+        <MiniMetric label="Workouts" value={distanceRows.length} unit="" border />
+      </div>
+      <div className="border border-gray-100 rounded overflow-hidden">
+        <div className="grid grid-cols-7 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
+          <div>Date</div><div>Workout</div><div>Distance</div><div>Duration</div><div>Pace</div><div>HR</div><div>Source</div>
+        </div>
+        {distanceRows.map((activity) => (
+          <div key={activity.id} className="grid grid-cols-7 gap-4 px-5 py-4 border-t border-gray-100 items-center text-sm">
+            <div className="text-gray-500">{formatDate(activity.start_time)}</div>
+            <div className="min-w-0">
+              <div className="font-semibold truncate">{activity.name || 'Workout'}</div>
+              <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{activity.type || 'Activity'}</div>
+            </div>
+            <div className="font-semibold">{activity.distance_km != null ? `${activity.distance_km.toFixed(1)} km` : '-'}</div>
+            <div>{formatDuration(activity.duration_sec)}</div>
+            <div>{formatPace(activity.avg_pace_sec_per_km)}</div>
+            <div>{activity.avg_hr ? `${activity.avg_hr} bpm` : '-'}</div>
+            <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{activity.provider}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RestingHrTable({ sleepRows }: { sleepRows: SleepRow[] }) {
+  const rows = sleepRows.filter((sleep) => sleep.resting_hr)
+  if (rows.length === 0) return <EmptyState label="resting heart rate data" />
+
+  return (
+    <div className="border border-gray-100 rounded overflow-hidden">
+      <div className="grid grid-cols-5 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
+        <div>Date</div><div>Resting HR</div><div>HRV</div><div>Sleep</div><div>Source</div>
+      </div>
+      {rows.map((sleep) => (
+        <div key={sleep.id} className="grid grid-cols-5 gap-4 px-5 py-4 border-t border-gray-100 items-center text-sm">
+          <div className="font-medium">{formatDate(sleep.date)}</div>
+          <div className="text-lg font-bold">{sleep.resting_hr}<span className="text-xs font-normal text-gray-400 ml-1">bpm</span></div>
+          <div>{sleep.hrv_ms ? `${sleep.hrv_ms} ms` : '-'}</div>
+          <div>{formatSleep(sleep.total_minutes)}</div>
+          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{sleep.provider}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SessionsTable({ sessions }: { sessions: SessionRow[] }) {
+  if (sessions.length === 0) return <EmptyState label="sessions" />
+
+  return (
+    <div className="border border-gray-100 rounded overflow-hidden">
+      <div className="grid grid-cols-5 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
+        <div>Date</div><div>Session</div><div>Type</div><div>Targets</div><div>Status</div>
+      </div>
+      {sessions.map((session) => (
+        <div key={session.id} className="grid grid-cols-5 gap-4 px-5 py-4 border-t border-gray-100 items-start text-sm">
+          <div className="text-gray-500">{formatDate(session.scheduled_date)}</div>
+          <div>
+            <div className="font-semibold">{session.title}</div>
+            {session.description && <div className="text-gray-500 mt-0.5">{session.description}</div>}
+          </div>
+          <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{session.type.replace(/_/g, ' ')}</div>
+          <div className="text-[10px] text-gray-400">
+            {session.targets
+              ? Object.entries(session.targets).map(([key, value]) => `${key.replace(/_/g, ' ')}: ${String(value)}`).join(' · ')
+              : '-'}
+          </div>
+          <div className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02]">{session.status}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MiniMetric({ label, value, unit, border }: { label: string; value: string | number; unit: string; border?: boolean }) {
+  return (
+    <div className={`p-5 ${border ? 'border-l border-gray-100' : ''}`}>
+      <div className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-2">{label}</div>
+      <div className="text-2xl font-bold tracking-tight">
+        {value}
+        {unit && <span className="text-sm font-normal text-gray-400 ml-1">{unit}</span>}
+      </div>
     </div>
   )
 }

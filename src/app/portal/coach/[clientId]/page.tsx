@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Zap, LogOut, ArrowLeft, Moon, Activity, ChevronRight, Calendar } from 'lucide-react'
+import { Zap, LogOut, ArrowLeft, Moon, Activity, Calendar } from 'lucide-react'
 import { logout, addComment } from '../../actions'
 import Link from 'next/link'
 
@@ -340,17 +340,20 @@ export default async function ClientDetailPage({
             {/* Recent activities */}
             <div className="border border-gray-100 rounded p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
+                <Link
+                  href={`/portal/coach/${clientId}/history?tab=activities`}
+                  className="text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-[#FC4C02] transition-colors flex items-center gap-1"
+                >
                   <Activity className="w-3 h-3 inline mr-1" /> RECENT
-                </h3>
-                <Link href={`/portal/coach/${clientId}/history`} className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02] hover:underline">
-                  View All
+                </Link>
+                <Link href={`/portal/coach/${clientId}/history?tab=activities`} className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02] hover:underline">
+                  Recent History
                 </Link>
               </div>
               {(activities?.length ?? 0) > 0 ? (
                 <div className="space-y-3">
                   {activities!.slice(0, 3).map((a: Record<string, unknown>) => (
-                    <Link key={a.id as string} href={`/portal/coach/${clientId}/history`} className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
+                    <Link key={a.id as string} href={`/portal/coach/${clientId}/history?tab=activities`} className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
                       <div>
                         <div className="text-sm font-medium">{a.name as string}</div>
                         <div className="text-[10px] text-gray-400">
