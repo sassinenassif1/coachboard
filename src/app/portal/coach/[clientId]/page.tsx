@@ -151,8 +151,8 @@ export default async function ClientDetailPage({
   const totalCount = sessionsWithComments.length
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100">
+    <div className="min-h-screen">
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
@@ -226,7 +226,7 @@ export default async function ClientDetailPage({
                   const past = isPast(session.scheduled_date)
 
                   return (
-                    <div key={session.id} className={`flex rounded-lg mb-2 border transition-colors ${today ? 'border-[#FC4C02]/20 bg-orange-50/20' : 'border-gray-100 hover:border-gray-200'} ${done ? 'opacity-80' : ''}`}>
+                    <div key={session.id} className={`flex rounded-xl mb-2 transition-all ${today ? 'glass border-[#FC4C02]/20 shadow-sm' : 'glass hover:shadow-md'} ${done ? 'opacity-80' : ''}`}>
                       {/* Color bar */}
                       <div className="w-1 shrink-0 rounded-l-lg" style={{ background: style.color }} />
                       <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 flex-1 min-w-0">
@@ -298,7 +298,7 @@ export default async function ClientDetailPage({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Recovery */}
-            <div className="border border-gray-100 rounded p-5">
+            <div className="glass rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
                   <HeartPulse className="w-3 h-3 inline mr-1" /> RECOVERY
@@ -363,7 +363,7 @@ export default async function ClientDetailPage({
             </div>
 
             {/* Recent activities */}
-            <div className="border border-gray-100 rounded p-5">
+            <div className="glass rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <Link
                   href={`/portal/coach/${clientId}/history?tab=activities`}

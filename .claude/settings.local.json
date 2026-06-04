@@ -28,7 +28,9 @@
       "mcp__Claude_in_Chrome__form_input",
       "mcp__Claude_in_Chrome__find",
       "mcp__Claude_in_Chrome__tabs_create_mcp",
-      "WebFetch(domain:coachboard-phi.vercel.app)"
+      "WebFetch(domain:coachboard-phi.vercel.app)",
+      "Bash(git remote *)",
+      "Bash(npm install *)"
     ]
   }
 }

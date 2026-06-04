@@ -132,8 +132,8 @@ export default async function MetricHistoryPage({
   const sessionRows = (sessions || []) as SessionRow[]
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100">
+    <div className="min-h-screen">
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link href="/portal" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>

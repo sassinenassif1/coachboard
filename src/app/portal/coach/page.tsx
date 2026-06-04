@@ -122,9 +122,9 @@ export default async function CoachDashboard() {
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Top nav */}
-      <nav className="border-b border-gray-100">
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
@@ -211,7 +211,7 @@ function ClientCard({ client }: { client: ClientSummary; weekStart: string; week
   return (
     <Link
       href={`/portal/coach/${client.id}`}
-      className="block border border-gray-100 rounded-lg hover:border-gray-200 hover:shadow-sm transition-all group"
+      className="block glass rounded-xl hover:shadow-md transition-all group"
     >
       <div className="p-5 sm:p-6">
         {/* Header: avatar + name + compliance ring */}
@@ -283,7 +283,7 @@ function ClientCard({ client }: { client: ClientSummary; weekStart: string; week
 
       {/* Latest activity footer */}
       {client.latestActivity && (
-        <div className="px-5 sm:px-6 py-3 border-t border-gray-50 bg-gray-50/30 rounded-b-lg flex items-center gap-3 text-xs text-gray-400">
+        <div className="px-5 sm:px-6 py-3 border-t border-white/30 bg-white/20 rounded-b-xl flex items-center gap-3 text-xs text-gray-400">
           <Activity className="w-3.5 h-3.5 text-gray-300" />
           <span className="font-medium text-gray-600">{client.latestActivity.name as string}</span>
           <span className="text-gray-300">&middot;</span>

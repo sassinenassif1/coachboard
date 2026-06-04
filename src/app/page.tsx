@@ -12,7 +12,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="flex items-center gap-3 mb-8">
         <div
           className="w-10 h-10 rounded-md flex items-center justify-center"

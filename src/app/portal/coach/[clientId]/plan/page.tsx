@@ -133,8 +133,8 @@ export default async function PlanBuilderPage({
     + ' — ' + new Date(weekEnd + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100">
+    <div className="min-h-screen">
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
@@ -173,7 +173,7 @@ export default async function PlanBuilderPage({
           <div className="lg:col-span-2">
             {/* Plan selector / creator */}
             {!activePlan ? (
-              <div className="border border-gray-100 rounded p-6 mb-8">
+              <div className="glass rounded-xl p-6 mb-8">
                 <h2 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
                   <Target className="w-3 h-3 inline mr-1" /> CREATE PLAN
                 </h2>
@@ -210,7 +210,7 @@ export default async function PlanBuilderPage({
             ) : (
               <>
                 {/* Active plan header */}
-                <div className="border border-gray-100 rounded p-5 mb-6">
+                <div className="glass rounded-xl p-5 mb-6">
                   <form action={updatePlan}>
                     <input type="hidden" name="plan_id" value={(activePlan as { id: string }).id} />
                     <input type="hidden" name="client_id" value={clientId} />
@@ -284,7 +284,7 @@ export default async function PlanBuilderPage({
                     const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' })
 
                     return (
-                      <div key={date} className={`border border-gray-100 rounded ${isToday ? 'ring-1 ring-[#FC4C02]/20' : ''}`}>
+                      <div key={date} className={`glass rounded-xl ${isToday ? 'ring-1 ring-[#FC4C02]/20' : ''}`}>
                         {/* Day header */}
                         <div className={`px-4 py-2 flex items-center justify-between ${isToday ? 'bg-orange-50/30' : 'bg-gray-50/50'}`}>
                           <div className="flex items-center gap-2">
@@ -397,7 +397,7 @@ export default async function PlanBuilderPage({
           {/* Sidebar: plan list + stats */}
           <div className="space-y-6">
             {/* All plans */}
-            <div className="border border-gray-100 rounded p-5">
+            <div className="glass rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
                   <Target className="w-3 h-3 inline mr-1" /> PLANS
@@ -444,7 +444,7 @@ export default async function PlanBuilderPage({
 
             {/* Week summary */}
             {activePlan && (
-              <div className="border border-gray-100 rounded p-5">
+              <div className="glass rounded-xl p-5">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
                   WEEK SUMMARY
                 </h3>
@@ -479,7 +479,7 @@ export default async function PlanBuilderPage({
             )}
 
             {/* Quick tips */}
-            <div className="border border-gray-100 rounded p-5">
+            <div className="glass rounded-xl p-5">
               <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-3">TIPS</h3>
               <ul className="space-y-2 text-xs text-gray-500">
                 <li>Add sessions to each day of the week</li>

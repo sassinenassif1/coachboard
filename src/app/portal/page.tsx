@@ -157,9 +157,9 @@ export default async function PortalPage({
   const totalCount = sessionsWithComments.length
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Top nav */}
-      <nav className="border-b border-gray-100">
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
@@ -203,7 +203,7 @@ export default async function PortalPage({
         )}
 
         {/* Metric bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-100 rounded-lg mb-8 sm:mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 glass rounded-xl mb-8 sm:mb-10">
           <MetricCard
             label="WEEKLY DISTANCE"
             value={weeklyDistance > 0 ? weeklyDistance.toFixed(1) : '—'}
@@ -265,7 +265,7 @@ export default async function PortalPage({
             />
 
             {/* Sleep card */}
-            <div className="border border-gray-100 rounded-lg p-5">
+            <div className="glass rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
                   <Moon className="w-3 h-3 inline mr-1" /> SLEEP
@@ -307,7 +307,7 @@ export default async function PortalPage({
             </div>
 
             {/* Weekly goals */}
-            <div className="border border-gray-100 rounded-lg p-5">
+            <div className="glass rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
                   <TrendingUp className="w-3 h-3 inline mr-1" /> WEEKLY GOALS
@@ -397,7 +397,7 @@ function DataConnections({
   const providers: ProviderConnection['provider'][] = ['strava', 'whoop']
 
   return (
-    <div className="border border-gray-100 rounded-lg p-5">
+    <div className="glass rounded-xl p-5">
       <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
         <Activity className="w-3 h-3 inline mr-1" /> DATA CONNECTIONS
       </h3>
@@ -468,7 +468,7 @@ function SessionRow({ session, userId }: { session: TrainingSession; userId: str
   const done = session.status === 'done'
 
   return (
-    <div className={`flex rounded-lg border transition-colors ${today ? 'border-[#FC4C02]/20 bg-orange-50/20' : 'border-gray-100 hover:border-gray-200'} ${done ? 'opacity-80' : ''}`}>
+    <div className={`flex rounded-xl transition-all ${today ? 'glass border-[#FC4C02]/20 shadow-sm' : 'glass hover:shadow-md'} ${done ? 'opacity-80' : ''}`}>
       {/* Color bar */}
       <div className="w-1 shrink-0 rounded-l-lg" style={{ background: style.color }} />
       <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 flex-1 min-w-0">
@@ -604,7 +604,7 @@ function ActivityCard({ activity }: { activity: Record<string, unknown> }) {
   const provider = activity.provider as string
 
   return (
-    <Link href="/portal/history/activities" className="block border border-gray-100 rounded-lg p-4 hover:border-gray-200 hover:shadow-sm transition-all group">
+    <Link href="/portal/history/activities" className="block glass rounded-xl p-4 hover:shadow-md transition-all group">
       <div className="flex items-center justify-between mb-3">
         <span className="font-semibold text-sm truncate group-hover:text-[#FC4C02] transition-colors">{name}</span>
         <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#FC4C02] transition-colors" />

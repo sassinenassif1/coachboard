@@ -149,8 +149,8 @@ export default async function CoachClientHistoryPage({
     ? Math.round(sleepRows.filter(s => s.resting_hr).reduce((sum, s) => sum + (s.resting_hr || 0), 0) / sleepRows.filter(s => s.resting_hr).length)
     : null
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100">
+    <div className="min-h-screen">
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
@@ -178,7 +178,7 @@ export default async function CoachClientHistoryPage({
         <p className="text-sm text-gray-400 mb-8">Full training and recovery history</p>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-100 rounded mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 glass rounded-xl mb-8">
           <div className="p-5">
             <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">TOTAL DISTANCE</div>
             <div className="text-2xl font-bold">{totalDistance > 0 ? totalDistance.toFixed(1) : '—'}
@@ -233,7 +233,7 @@ export default async function CoachClientHistoryPage({
           activityRows.length === 0 ? (
             <EmptyState label="activities" />
           ) : (
-            <div className="border border-gray-100 rounded overflow-x-auto">
+            <div className="glass rounded-xl overflow-x-auto">
               <div className="grid grid-cols-7 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
                 <div>Date</div><div>Workout</div><div>Distance</div><div>Duration</div><div>Pace</div><div>HR</div><div>Source</div>
               </div>
@@ -263,7 +263,7 @@ export default async function CoachClientHistoryPage({
           sleepRows.length === 0 ? (
             <EmptyState label="sleep data" />
           ) : (
-            <div className="border border-gray-100 rounded overflow-x-auto">
+            <div className="glass rounded-xl overflow-x-auto">
               <div className="grid grid-cols-7 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
                 <div>Date</div><div>Total</div><div>Deep</div><div>REM</div><div>Light</div><div>Awake</div><div>Score</div>
               </div>
@@ -287,7 +287,7 @@ export default async function CoachClientHistoryPage({
           return recoveryRows.length === 0 ? (
             <EmptyState label="recovery data" />
           ) : (
-            <div className="border border-gray-100 rounded overflow-x-auto">
+            <div className="glass rounded-xl overflow-x-auto">
               <div className="grid grid-cols-5 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
                 <div>Date</div><div>Recovery</div><div>HRV</div><div>Resting HR</div><div>Sleep</div>
               </div>
