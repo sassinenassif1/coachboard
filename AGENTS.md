@@ -46,14 +46,27 @@ src/
 │   ├── login/
 │   │   ├── page.tsx         # Login/signup form
 │   │   └── actions.ts       # Server actions: login(), signup()
+│   ├── api/
+│   │   ├── oauth/[provider]/
+│   │   │   ├── start/route.ts    # OAuth redirect to Strava/Whoop
+│   │   │   └── callback/route.ts # OAuth callback, token exchange, initial sync
+│   │   └── cron/sync/route.ts    # Background sync cron (every 4h)
 │   └── portal/
-│       ├── page.tsx         # Client dashboard (full Strava-style layout)
-│       ├── actions.ts       # Server actions: logout(), addComment()
+│       ├── page.tsx         # Client dashboard (sessions, sleep, activities, goals)
+│       ├── actions.ts       # Server actions: logout(), addComment(), syncProvider()
+│       ├── history/
+│       │   └── [metric]/page.tsx  # History tables (activities, sleep, recovery, etc.)
 │       └── coach/
 │           ├── page.tsx     # Coach dashboard (multi-athlete overview)
+│           ├── actions.ts   # Server actions: createPlan, addSession, deleteSession, etc.
 │           └── [clientId]/
-│               └── page.tsx # Coach drill-down into single athlete
+│               ├── page.tsx # Coach drill-down into single athlete
+│               └── plan/
+│                   └── page.tsx # Plan builder (weekly calendar, session CRUD)
 ├── lib/
+│   ├── oauth/
+│   │   ├── providers.ts     # Strava/Whoop config, token exchange, refresh
+│   │   └── sync.ts          # Fetch + store activities/sleep, auto-link to sessions
 │   └── supabase/
 │       ├── client.ts        # Browser-side Supabase client
 │       ├── server.ts        # Server-side Supabase client (async, uses cookies)
@@ -169,11 +182,21 @@ type SessionType = 'run' | 'strength' | 'rest' | 'mobility' | 'cross_training'
 
 ## Server actions
 
-Located in `src/app/login/actions.ts` and `src/app/portal/actions.ts`:
+`src/app/login/actions.ts`:
 - `login(formData)` — email/password sign in → redirect `/portal`
 - `signup(formData)` — create account with role metadata → redirect `/portal`
+
+`src/app/portal/actions.ts`:
 - `logout()` — sign out → redirect `/login`
 - `addComment(formData)` — insert into `session_comments`
+- `syncProvider(formData)` — refresh token if needed, sync provider data, revalidate
+
+`src/app/portal/coach/actions.ts`:
+- `createPlan(formData)` — create training plan → redirect to plan builder
+- `updatePlan(formData)` — update plan name, goal, dates
+- `addSession(formData)` — add session to plan with type, title, targets
+- `updateSession(formData)` — edit session details
+- `deleteSession(formData)` — remove session and its comments
 
 ## Test accounts (development)
 
@@ -182,22 +205,26 @@ Located in `src/app/login/actions.ts` and `src/app/portal/actions.ts`:
 
 ## What's shipped ✅
 
-- Full auth flow (login, signup, logout, role-based routing)
-- Client portal with sessions, sleep sidebar, activities, weekly goals
-- Coach dashboard with multi-athlete cards + metrics
-- Coach client drill-down with coaching notes
-- Deployed to Vercel with auto-deploy from GitHub
-
-## What's next (build order)
-
 1. ~~Supabase schema~~ ✅
-2. ~~Auth + dashboards~~ ✅
-3. **Strava OAuth** — OAuth flow, token refresh, fetch activities, store in `activities` table
-4. **Wire real-time data** — replace seeded data with live Strava sync
-5. **Whoop + Apple Health** — repeat Strava pattern
-6. **Background sync workers** — cron jobs on Hetzner pulling fresh data every few hours
-7. **Plan builder UI** — coach creates/edits weekly training plans
-8. **Activity↔Session linking** — match synced activities to planned sessions
+2. ~~Auth + dashboards~~ ✅ — login, signup, logout, role-based routing
+3. ~~Strava OAuth~~ ✅ — OAuth flow, token refresh, fetch activities
+4. ~~Whoop OAuth~~ ✅ — workouts, sleep, recovery sync
+5. ~~Client portal~~ ✅ — sessions, sleep sidebar, activities, weekly goals, data connections
+6. ~~Coach dashboard~~ ✅ — multi-athlete overview with metrics
+7. ~~Coach client drill-down~~ ✅ — with coaching notes
+8. ~~Plan builder~~ ✅ — `/portal/coach/[clientId]/plan` with weekly calendar, session CRUD, targets
+9. ~~Activity↔Session linking~~ ✅ — auto-matches synced activities to planned sessions by date+type
+10. ~~Background sync~~ ✅ — `/api/cron/sync` runs every 4h via Vercel cron
+11. ~~History pages~~ ✅ — activities, distance, sleep, recovery, resting HR, sessions
+12. ~~Deployed~~ ✅ — Vercel + GitHub auto-deploy
+
+## What's next
+
+- **Apple Health integration** — repeat Strava/Whoop pattern
+- **Strava webhook** — real-time push instead of polling
+- **Notification system** — coach notified when athlete completes session
+- **Custom domain** — configure production domain
+- **Mobile responsive** — optimize layouts for phone/tablet
 
 ## Conventions
 
