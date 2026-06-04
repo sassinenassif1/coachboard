@@ -135,7 +135,7 @@ export default async function PlanBuilderPage({
   return (
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
               <Zap className="w-4 h-4 text-white" strokeWidth={2.5} fill="white" />
@@ -153,7 +153,7 @@ export default async function PlanBuilderPage({
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <Link href={`/portal/coach/${clientId}`} className="text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-gray-600 flex items-center gap-1 mb-6">
           <ArrowLeft className="w-3 h-3" /> {clientName}
         </Link>
@@ -168,9 +168,9 @@ export default async function PlanBuilderPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main: plan + week view */}
-          <div className="col-span-2">
+          <div className="lg:col-span-2">
             {/* Plan selector / creator */}
             {!activePlan ? (
               <div className="border border-gray-100 rounded p-6 mb-8">
@@ -354,7 +354,7 @@ export default async function PlanBuilderPage({
                               <input type="hidden" name="plan_id" value={(activePlan as { id: string }).id} />
                               <input type="hidden" name="client_id" value={clientId} />
                               <input type="hidden" name="scheduled_date" value={date} />
-                              <div className="flex gap-2 items-start">
+                              <div className="flex flex-wrap gap-2 items-start">
                                 <select name="type" defaultValue="run"
                                   className="text-[10px] font-bold tracking-wider uppercase px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02] bg-white">
                                   {SESSION_TYPES.map(t => (
@@ -362,16 +362,16 @@ export default async function PlanBuilderPage({
                                   ))}
                                 </select>
                                 <input name="title" type="text" required placeholder="Session title..."
-                                  className="flex-1 text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                  className="flex-1 min-w-[120px] text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
                                 <input name="description" type="text" placeholder="Notes..."
-                                  className="flex-1 text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                  className="flex-1 min-w-[100px] text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02] hidden sm:block" />
                                 <button type="submit" className="shrink-0 w-7 h-7 rounded flex items-center justify-center text-white"
                                   style={{ background: '#FC4C02' }} title="Add session">
                                   <Plus className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                               {/* Optional targets row */}
-                              <div className="flex gap-2 mt-1">
+                              <div className="flex flex-wrap gap-2 mt-1">
                                 <input name="target_distance_km" type="text" placeholder="Dist (km)"
                                   className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
                                 <input name="target_pace" type="text" placeholder="Pace"

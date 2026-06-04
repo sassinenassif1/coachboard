@@ -125,7 +125,7 @@ export default async function CoachDashboard() {
     <div className="min-h-screen bg-white">
       {/* Top nav */}
       <nav className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded flex items-center justify-center"
@@ -135,8 +135,8 @@ export default async function CoachDashboard() {
             </div>
             <span className="font-bold text-sm tracking-tight">COACHBOARD</span>
           </div>
-          <div className="flex items-center gap-6">
-            <span className="text-xs font-bold tracking-wider uppercase text-gray-400">COACH</span>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <span className="text-xs font-bold tracking-wider uppercase text-gray-400 hidden sm:inline">COACH</span>
             <form action={logout}>
               <button type="submit" className="text-gray-400 hover:text-gray-600 transition-colors">
                 <LogOut className="w-4 h-4" />
@@ -146,10 +146,10 @@ export default async function CoachDashboard() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Hero */}
-        <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 gap-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {getGreeting()}, {firstName}.
           </h1>
           <span className="text-xs text-gray-400 font-medium">
@@ -219,7 +219,7 @@ function ClientCard({ client }: { client: ClientSummary; weekStart: string; week
       </div>
 
       {/* Metrics row */}
-      <div className="grid grid-cols-5 gap-4 pt-4 border-t border-gray-100">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-100">
         <div>
           <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">DISTANCE</div>
           <div className="text-lg font-bold">

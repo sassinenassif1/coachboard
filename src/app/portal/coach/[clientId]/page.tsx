@@ -153,7 +153,7 @@ export default async function ClientDetailPage({
   return (
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
               <Zap className="w-4 h-4 text-white" strokeWidth={2.5} fill="white" />
@@ -171,13 +171,13 @@ export default async function ClientDetailPage({
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <Link href="/portal/coach" className="text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-gray-600 flex items-center gap-1 mb-6">
           <ArrowLeft className="w-3 h-3" /> ALL ATHLETES
         </Link>
 
-        <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-3xl font-bold tracking-tight">{clientName}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 gap-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{clientName}</h1>
           <span className="text-xs text-gray-400 font-medium">{client?.email as string}</span>
         </div>
 
@@ -204,9 +204,9 @@ export default async function ClientDetailPage({
         </p>
 
         {/* Main content */}
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Sessions */}
-          <div className="col-span-2">
+          <div className="lg:col-span-2">
             <h2 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">THIS WEEK</h2>
             {sessionsWithComments.length === 0 ? (
               <div className="py-16 text-center text-gray-400 text-sm border border-gray-100 rounded">

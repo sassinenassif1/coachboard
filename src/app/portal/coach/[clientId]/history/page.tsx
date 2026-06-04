@@ -151,7 +151,7 @@ export default async function CoachClientHistoryPage({
   return (
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
               <Zap className="w-4 h-4 text-white" strokeWidth={2.5} fill="white" />
@@ -169,7 +169,7 @@ export default async function CoachClientHistoryPage({
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <Link href={`/portal/coach/${clientId}`} className="text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-gray-600 flex items-center gap-1 mb-6">
           <ArrowLeft className="w-3 h-3" /> {clientName}
         </Link>
@@ -178,7 +178,7 @@ export default async function CoachClientHistoryPage({
         <p className="text-sm text-gray-400 mb-8">Full training and recovery history</p>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-4 border border-gray-100 rounded mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-100 rounded mb-8">
           <div className="p-5">
             <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400 mb-1">TOTAL DISTANCE</div>
             <div className="text-2xl font-bold">{totalDistance > 0 ? totalDistance.toFixed(1) : '—'}
@@ -204,7 +204,7 @@ export default async function CoachClientHistoryPage({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
           {([
             { key: 'activities', label: 'Activities', icon: Activity },
             { key: 'distance', label: 'Distance', icon: TrendingUp },
@@ -233,7 +233,7 @@ export default async function CoachClientHistoryPage({
           activityRows.length === 0 ? (
             <EmptyState label="activities" />
           ) : (
-            <div className="border border-gray-100 rounded overflow-hidden">
+            <div className="border border-gray-100 rounded overflow-x-auto">
               <div className="grid grid-cols-7 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
                 <div>Date</div><div>Workout</div><div>Distance</div><div>Duration</div><div>Pace</div><div>HR</div><div>Source</div>
               </div>
@@ -263,7 +263,7 @@ export default async function CoachClientHistoryPage({
           sleepRows.length === 0 ? (
             <EmptyState label="sleep data" />
           ) : (
-            <div className="border border-gray-100 rounded overflow-hidden">
+            <div className="border border-gray-100 rounded overflow-x-auto">
               <div className="grid grid-cols-7 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
                 <div>Date</div><div>Total</div><div>Deep</div><div>REM</div><div>Light</div><div>Awake</div><div>Score</div>
               </div>
@@ -287,7 +287,7 @@ export default async function CoachClientHistoryPage({
           return recoveryRows.length === 0 ? (
             <EmptyState label="recovery data" />
           ) : (
-            <div className="border border-gray-100 rounded overflow-hidden">
+            <div className="border border-gray-100 rounded overflow-x-auto">
               <div className="grid grid-cols-5 gap-4 px-5 py-3 bg-gray-50 text-[10px] font-bold tracking-wider uppercase text-gray-400">
                 <div>Date</div><div>Recovery</div><div>HRV</div><div>Resting HR</div><div>Sleep</div>
               </div>

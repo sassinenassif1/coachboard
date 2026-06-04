@@ -160,7 +160,7 @@ export default async function PortalPage({
     <div className="min-h-screen bg-white">
       {/* Top nav */}
       <nav className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded flex items-center justify-center"
@@ -170,8 +170,8 @@ export default async function PortalPage({
             </div>
             <span className="font-bold text-sm tracking-tight">COACHBOARD</span>
           </div>
-          <div className="flex items-center gap-6">
-            <span className="text-xs font-bold tracking-wider uppercase text-gray-400">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <span className="text-xs font-bold tracking-wider uppercase text-gray-400 hidden sm:inline">
               {role === 'coach' ? 'Coach' : 'Training'}
             </span>
             <form action={logout}>
@@ -186,10 +186,10 @@ export default async function PortalPage({
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Editorial hero */}
-        <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 gap-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             {getGreeting()}, {firstName}.
           </h1>
           <span className="text-xs text-gray-400 font-medium">
@@ -203,7 +203,7 @@ export default async function PortalPage({
         )}
 
         {/* Metric bar */}
-        <div className="grid grid-cols-4 border border-gray-100 rounded mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-100 rounded mb-8 sm:mb-10">
           <MetricCard
             label="WEEKLY DISTANCE"
             value={weeklyDistance > 0 ? weeklyDistance.toFixed(1) : '—'}
@@ -234,9 +234,9 @@ export default async function PortalPage({
         </div>
 
         {/* Main content: sessions + sidebar */}
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Sessions (2/3) */}
-          <div className="col-span-2">
+          <div className="lg:col-span-2">
             <h2 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
               THIS WEEK
             </h2>
@@ -330,7 +330,7 @@ export default async function PortalPage({
             >
               RECENT ACTIVITIES <ChevronRight className="w-3 h-3" />
             </Link>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activities!.map((a: Record<string, unknown>) => (
                 <ActivityCard key={a.id as string} activity={a} />
               ))}
@@ -369,7 +369,7 @@ function MetricCard({
     return (
       <Link
         href={href}
-        className={`p-5 block hover:bg-orange-50/30 transition-colors ${border ? 'border-l border-gray-100' : ''}`}
+        className={`p-4 sm:p-5 block hover:bg-orange-50/30 transition-colors ${border ? 'sm:border-l border-gray-100' : ''}`}
       >
         {content}
       </Link>
@@ -377,7 +377,7 @@ function MetricCard({
   }
 
   return (
-    <div className={`p-5 ${border ? 'border-l border-gray-100' : ''}`}>
+    <div className={`p-4 sm:p-5 ${border ? 'sm:border-l border-gray-100' : ''}`}>
       {content}
     </div>
   )

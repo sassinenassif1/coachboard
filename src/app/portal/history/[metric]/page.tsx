@@ -134,7 +134,7 @@ export default async function MetricHistoryPage({
   return (
     <div className="min-h-screen bg-white">
       <nav className="border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link href="/portal" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: '#FC4C02' }}>
               <Zap className="w-4 h-4 text-white" strokeWidth={2.5} fill="white" />
@@ -152,12 +152,12 @@ export default async function MetricHistoryPage({
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <Link href="/portal" className="text-xs font-bold tracking-wider uppercase text-gray-400 hover:text-gray-600 inline-flex items-center gap-1 mb-6">
           <ArrowLeft className="w-3 h-3" /> Dashboard
         </Link>
 
-        <div className="flex items-start justify-between gap-6 mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-6 mb-8 sm:mb-10">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-gray-400 mb-2">
               <Icon className="w-3 h-3" /> {meta.label}
