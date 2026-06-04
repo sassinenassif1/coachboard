@@ -288,9 +288,14 @@ export default async function ClientDetailPage({
           <div className="space-y-6">
             {/* Sleep */}
             <div className="border border-gray-100 rounded p-5">
-              <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
-                <Moon className="w-3 h-3 inline mr-1" /> SLEEP
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
+                  <Moon className="w-3 h-3 inline mr-1" /> SLEEP
+                </h3>
+                <Link href={`/portal/coach/${clientId}/history?tab=sleep`} className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02] hover:underline">
+                  View All
+                </Link>
+              </div>
               {latestSleep ? (
                 <div>
                   <div className="text-3xl font-bold tracking-tight">
@@ -334,13 +339,18 @@ export default async function ClientDetailPage({
 
             {/* Recent activities */}
             <div className="border border-gray-100 rounded p-5">
-              <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400 mb-4">
-                <Activity className="w-3 h-3 inline mr-1" /> RECENT
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold tracking-wider uppercase text-gray-400">
+                  <Activity className="w-3 h-3 inline mr-1" /> RECENT
+                </h3>
+                <Link href={`/portal/coach/${clientId}/history`} className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02] hover:underline">
+                  View All
+                </Link>
+              </div>
               {(activities?.length ?? 0) > 0 ? (
                 <div className="space-y-3">
                   {activities!.slice(0, 3).map((a: Record<string, unknown>) => (
-                    <div key={a.id as string} className="flex items-center justify-between">
+                    <Link key={a.id as string} href={`/portal/coach/${clientId}/history`} className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
                       <div>
                         <div className="text-sm font-medium">{a.name as string}</div>
                         <div className="text-[10px] text-gray-400">
@@ -350,7 +360,7 @@ export default async function ClientDetailPage({
                       <span className="text-[10px] text-gray-400">
                         {new Date(a.start_time as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (

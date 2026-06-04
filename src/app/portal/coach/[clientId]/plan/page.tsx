@@ -343,40 +343,48 @@ export default async function PlanBuilderPage({
                           })}
 
                           {/* Add session form for this day */}
-                          <form action={addSession} className="mt-1">
-                            <input type="hidden" name="plan_id" value={(activePlan as { id: string }).id} />
-                            <input type="hidden" name="client_id" value={clientId} />
-                            <input type="hidden" name="scheduled_date" value={date} />
-                            <div className="flex gap-2 items-start">
-                              <select name="type" defaultValue="run"
-                                className="text-[10px] font-bold tracking-wider uppercase px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02] bg-white">
-                                {SESSION_TYPES.map(t => (
-                                  <option key={t.value} value={t.value}>{t.label}</option>
-                                ))}
-                              </select>
-                              <input name="title" type="text" required placeholder="Session title..."
-                                className="flex-1 text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
-                              <input name="description" type="text" placeholder="Notes..."
-                                className="flex-1 text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
-                              <button type="submit" className="shrink-0 w-7 h-7 rounded flex items-center justify-center text-white"
-                                style={{ background: '#FC4C02' }} title="Add session">
-                                <Plus className="w-3.5 h-3.5" />
-                              </button>
+                          <div className={`${daySessions.length > 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}`}>
+                            <div className="flex items-center gap-1 mb-2">
+                              <Plus className="w-3 h-3 text-[#FC4C02]" />
+                              <span className="text-[10px] font-bold tracking-wider uppercase text-[#FC4C02]">
+                                ADD {daySessions.length > 0 ? 'ANOTHER ' : ''}SESSION
+                              </span>
                             </div>
-                            {/* Optional targets row */}
-                            <div className="flex gap-2 mt-1">
-                              <input name="target_distance_km" type="text" placeholder="Dist (km)"
-                                className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
-                              <input name="target_pace" type="text" placeholder="Pace"
-                                className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
-                              <input name="target_hr_zone" type="text" placeholder="HR zone"
-                                className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
-                              <input name="target_duration_min" type="text" placeholder="Dur (min)"
-                                className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
-                              <input name="target_sets" type="text" placeholder="Sets"
-                                className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
-                            </div>
-                          </form>
+                            <form action={addSession}>
+                              <input type="hidden" name="plan_id" value={(activePlan as { id: string }).id} />
+                              <input type="hidden" name="client_id" value={clientId} />
+                              <input type="hidden" name="scheduled_date" value={date} />
+                              <div className="flex gap-2 items-start">
+                                <select name="type" defaultValue="run"
+                                  className="text-[10px] font-bold tracking-wider uppercase px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02] bg-white">
+                                  {SESSION_TYPES.map(t => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                  ))}
+                                </select>
+                                <input name="title" type="text" required placeholder="Session title..."
+                                  className="flex-1 text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                <input name="description" type="text" placeholder="Notes..."
+                                  className="flex-1 text-sm px-2 py-1.5 border border-gray-200 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                <button type="submit" className="shrink-0 w-7 h-7 rounded flex items-center justify-center text-white"
+                                  style={{ background: '#FC4C02' }} title="Add session">
+                                  <Plus className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              {/* Optional targets row */}
+                              <div className="flex gap-2 mt-1">
+                                <input name="target_distance_km" type="text" placeholder="Dist (km)"
+                                  className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                <input name="target_pace" type="text" placeholder="Pace"
+                                  className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                <input name="target_hr_zone" type="text" placeholder="HR zone"
+                                  className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                <input name="target_duration_min" type="text" placeholder="Dur (min)"
+                                  className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
+                                <input name="target_sets" type="text" placeholder="Sets"
+                                  className="w-20 text-[10px] px-2 py-1 border border-gray-100 rounded focus:outline-none focus:border-[#FC4C02]" />
+                              </div>
+                            </form>
+                          </div>
                         </div>
                       </div>
                     )
