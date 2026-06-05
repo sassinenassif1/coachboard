@@ -154,9 +154,9 @@ async function syncStravaActivities(
     distance_km: activity.distance != null ? activity.distance / 1000 : null,
     duration_sec: activity.moving_time ?? activity.elapsed_time ?? null,
     avg_hr: activity.average_heartrate ? Math.round(activity.average_heartrate) : null,
-    max_hr: activity.max_heartrate ?? null,
+    max_hr: activity.max_heartrate != null ? Math.round(activity.max_heartrate) : null,
     avg_pace_sec_per_km: secondsPerKm(activity.distance, activity.moving_time),
-    elevation_gain_m: activity.total_elevation_gain ?? null,
+    elevation_gain_m: activity.total_elevation_gain != null ? Math.round(activity.total_elevation_gain) : null,
     raw_data: activity,
     synced_at: new Date().toISOString(),
   }))
@@ -201,8 +201,8 @@ async function syncWhoopData(
     duration_sec: workout.start && workout.end
       ? Math.max(0, Math.round((Date.parse(workout.end) - Date.parse(workout.start)) / 1000))
       : null,
-    avg_hr: workout.score?.average_heart_rate ?? null,
-    max_hr: workout.score?.max_heart_rate ?? null,
+    avg_hr: workout.score?.average_heart_rate != null ? Math.round(workout.score.average_heart_rate) : null,
+    max_hr: workout.score?.max_heart_rate != null ? Math.round(workout.score.max_heart_rate) : null,
     avg_pace_sec_per_km: null,
     elevation_gain_m: null,
     raw_data: workout,
