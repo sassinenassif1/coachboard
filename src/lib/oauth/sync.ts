@@ -129,21 +129,19 @@ async function syncStravaActivities(
   userId: string,
   accessToken: string
 ): Promise<SyncResult> {
-  const since = Math.floor((Date.now() - 1000 * 60 * 60 * 24 * 30) / 1000)
-
-  // Paginate through all activities in the last 30 days
+  // Paginate through the athlete's ENTIRE activity history (no date filter)
   const activities: StravaActivity[] = []
   let page = 1
-  const perPage = 100
+  const perPage = 200
   while (true) {
     const batch = await providerFetch<StravaActivity[]>(
-      `https://www.strava.com/api/v3/athlete/activities?after=${since}&page=${page}&per_page=${perPage}`,
+      `https://www.strava.com/api/v3/athlete/activities?page=${page}&per_page=${perPage}`,
       accessToken
     )
     activities.push(...batch)
     if (batch.length < perPage) break
     page++
-    if (page > 5) break // safety limit: 500 activities max
+    if (page > 50) break // safety limit: 10,000 activities max
   }
 
   const rows = activities.map((activity) => ({

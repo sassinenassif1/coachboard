@@ -82,13 +82,58 @@ function formatPace(seconds: number | null) {
   return `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}/km`
 }
 
+// ── Activity type normalization ────────────────────────────────
+type ActivityType = 'run' | 'ride' | 'swim' | 'other'
+
+function normalizeType(type: string | null): ActivityType {
+  const t = (type || '').toLowerCase()
+  if (t.includes('run') || t.includes('treadmill')) return 'run'
+  if (t.includes('ride') || t.includes('bike') || t.includes('cycl') || t.includes('velomobile') || t.includes('handcycle')) return 'ride'
+  if (t.includes('swim')) return 'swim'
+  return 'other'
+}
+
+const TYPE_STYLES: Record<ActivityType, { label: string; color: string; bg: string }> = {
+  run: { label: 'RUN', color: '#0F6E56', bg: '#E1F5EE' },
+  ride: { label: 'RIDE', color: '#3C3489', bg: '#EEEDFE' },
+  swim: { label: 'SWIM', color: '#0C6FA5', bg: '#E1F0F8' },
+  other: { label: 'OTHER', color: '#5F5E5A', bg: '#F1EFE8' },
+}
+
+// Rides → speed (km/h); everything else → pace (min/km)
+function formatPaceOrSpeed(activity: ActivityRow): string {
+  if (normalizeType(activity.type) === 'ride') {
+    if (activity.distance_km && activity.duration_sec) {
+      const kmh = activity.distance_km / (activity.duration_sec / 3600)
+      return `${kmh.toFixed(1)} km/h`
+    }
+    return '-'
+  }
+  return formatPace(activity.avg_pace_sec_per_km)
+}
+
+function TypeBadge({ type }: { type: string | null }) {
+  const style = TYPE_STYLES[normalizeType(type)]
+  return (
+    <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded" style={{ color: style.color, background: style.bg }}>
+      {style.label}
+    </span>
+  )
+}
+
 export default async function MetricHistoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ metric: string }>
+  searchParams: Promise<{ type?: string }>
 }) {
   const { metric: metricParam } = await params
+  const query = await searchParams
   if (!isMetric(metricParam)) redirect('/portal')
+
+  const typeFilter: ActivityType | 'all' =
+    query.type === 'run' || query.type === 'ride' || query.type === 'swim' ? query.type : 'all'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -109,7 +154,7 @@ export default async function MetricHistoryPage({
       .select('id, provider, start_time, type, name, distance_km, duration_sec, avg_hr, max_hr, avg_pace_sec_per_km, elevation_gain_m')
       .eq('client_id', user.id)
       .order('start_time', { ascending: false })
-      .limit(100),
+      .limit(2000),
     supabase
       .from('sleep_logs')
       .select('id, date, provider, total_minutes, deep_minutes, rem_minutes, light_minutes, awake_minutes, hrv_ms, resting_hr, sleep_score')
@@ -127,9 +172,13 @@ export default async function MetricHistoryPage({
   const metric = metricParam
   const meta = METRIC_META[metric]
   const Icon = meta.icon
-  const activityRows = (activities || []) as ActivityRow[]
+  const allActivityRows = (activities || []) as ActivityRow[]
+  const activityRows = typeFilter === 'all'
+    ? allActivityRows
+    : allActivityRows.filter((a) => normalizeType(a.type) === typeFilter)
   const sleepRows = (sleepLogs || []) as SleepRow[]
   const sessionRows = (sessions || []) as SessionRow[]
+  const showTypeFilter = metric === 'activities' || metric === 'distance'
 
   return (
     <div className="min-h-screen">
@@ -166,6 +215,8 @@ export default async function MetricHistoryPage({
           </div>
           <HistoryTabs active={metric} />
         </div>
+
+        {showTypeFilter && <TypeFilter metric={metric} active={typeFilter} />}
 
         {metric === 'activities' && <ActivitiesTable activities={activityRows} />}
         {metric === 'distance' && <DistanceHistory activities={activityRows} />}
@@ -208,22 +259,45 @@ function EmptyState({ label }: { label: string }) {
   )
 }
 
+function TypeFilter({ metric, active }: { metric: Metric; active: ActivityType | 'all' }) {
+  const options: { value: ActivityType | 'all'; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'run', label: 'Run' },
+    { value: 'ride', label: 'Ride' },
+    { value: 'swim', label: 'Swim' },
+  ]
+  return (
+    <div className="flex gap-1.5 mb-4">
+      {options.map((opt) => (
+        <Link
+          key={opt.value}
+          href={opt.value === 'all' ? `/portal/history/${metric}` : `/portal/history/${metric}?type=${opt.value}`}
+          className={`text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-md border transition-colors ${
+            active === opt.value
+              ? 'border-[#FC4C02] text-[#FC4C02] bg-orange-50/40'
+              : 'border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300'
+          }`}
+        >
+          {opt.label}
+        </Link>
+      ))}
+    </div>
+  )
+}
+
 function ActivitiesTable({ activities }: { activities: ActivityRow[] }) {
   if (activities.length === 0) return <EmptyState label="activities" />
 
   return (
-    <div className="border border-gray-100 rounded overflow-hidden">
-      <HistoryHeader columns={['Date', 'Workout', 'Distance', 'Duration', 'Pace', 'HR', 'Provider']} />
+    <div className="glass rounded-xl overflow-x-auto">
+      <HistoryHeader columns={['Date', 'Type', 'Distance', 'Duration', 'Pace / Speed', 'HR', 'Provider']} />
       {activities.map((activity) => (
         <div key={activity.id} className="grid grid-cols-7 gap-4 px-5 py-4 border-t border-gray-100 items-center text-sm">
           <div className="text-gray-500">{formatDate(activity.start_time)}</div>
-          <div className="min-w-0">
-            <div className="font-semibold truncate">{activity.name || 'Workout'}</div>
-            <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{activity.type || 'Activity'}</div>
-          </div>
+          <div><TypeBadge type={activity.type} /></div>
           <div className="font-semibold">{activity.distance_km != null ? `${activity.distance_km.toFixed(1)} km` : '-'}</div>
           <div>{formatDuration(activity.duration_sec)}</div>
-          <div>{formatPace(activity.avg_pace_sec_per_km)}</div>
+          <div>{formatPaceOrSpeed(activity)}</div>
           <div>{activity.avg_hr ? `${activity.avg_hr} bpm` : '-'}</div>
           <div className="text-[10px] font-bold tracking-wider uppercase text-gray-400">{activity.provider}</div>
         </div>
@@ -241,7 +315,7 @@ function DistanceHistory({ activities }: { activities: ActivityRow[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 border border-gray-100 rounded">
+      <div className="grid grid-cols-3 glass rounded-xl">
         <MiniMetric label="Total logged" value={total.toFixed(1)} unit="km" />
         <MiniMetric label="Longest workout" value={longest.toFixed(1)} unit="km" border />
         <MiniMetric label="Workouts" value={distanceActivities.length} unit="" border />
